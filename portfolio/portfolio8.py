@@ -134,7 +134,6 @@ total_pnl = df_portfolio["pnl_jpy"].sum()
 sector_df["pnl_contrib_pct"] = sector_df["pnl_jpy"] / total_pnl * 100
 
 st.dataframe(sector_df)
-
 st.subheader("合計")
 st.metric("評価額合計 (JPY)", f"{df_portfolio['mv_jpy'].sum():,.0f}")
 st.metric("含み損益 (JPY)", f"{df_portfolio['pnl_jpy'].sum():,.0f}")
@@ -169,5 +168,6 @@ st.pyplot(fig2)
 st.subheader("総資産推移（過去6か月）")
 history = load_history(df_portfolio, df_trades=df_trades, period="6mo")
 st.line_chart(history["Total"])
+
 
 
