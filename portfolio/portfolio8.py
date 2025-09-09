@@ -2,26 +2,20 @@ import streamlit as st
 import pandas as pd
 import yfinance as yf
 import matplotlib.pyplot as plt
-from matplotlib import font_manager as fm
 from datetime import date
 import io
 import requests
-import tempfile
 
 # ========== 設定 ==========
-FX_TO_JPY = {"USD": 155.0, "JPY": 1.0}
-FEE_RATE = 0.00495
+FX_TO_JPY = {"USD": 155.0, "JPY": 1.0}   # 為替レート
+FEE_RATE = 0.00495  # 手数料率 0.495%
+
 PORTFOLIO_CSV_URL = "https://raw.githubusercontent.com/hayatonn/family_portfolio/refs/heads/main/portfolio/portfolio.csv"
 TRADES_CSV_URL    = "https://raw.githubusercontent.com/hayatonn/family_portfolio/refs/heads/main/portfolio/trades.csv"
 
-# ========== 日本語フォント設定（TTF, Cloud対応） ==========
-FONT_URL = "https://github.com/googlefonts/noto-cjk/raw/main/Sans/OTF/Japanese/NotoSansJP-Regular.ttf"
-r = requests.get(FONT_URL)
-with tempfile.NamedTemporaryFile(delete=False, suffix=".ttf") as f:
-    f.write(r.content)
-    font_path = f.name
-
-font_prop = fm.FontProperties(fname=font_path)
+# ========== 日本語フォント設定 ==========
+import matplotlib
+matplotlib.rcParams['font.family'] = 'IPAexGothic'
 
 # ========== CSV取得関数 ==========
 def fetch_csv_from_github(url):
@@ -36,9 +30,7 @@ def fetch_csv_from_github(url):
         return pd.DataFrame()
 
 def guess_currency(ticker: str) -> str:
-    if ticker.endswith(".T"):
-        return "JPY"
-    return "USD"
+    return "JPY" if ticker.endswith(".T") else "USD"
 
 def load_prices_and_sector(tickers):
     prices, sectors = {}, {}
@@ -145,10 +137,9 @@ ax.pie(
     latest_assets.values,
     labels=latest_assets.index,
     autopct="%1.1f%%",
-    startangle=90,
-    textprops={'fontproperties': font_prop}
+    startangle=90
 )
-ax.set_title("資産寄与度", fontproperties=font_prop)
+ax.set_title("資産寄与度")
 st.pyplot(fig)
 
 # セクター円グラフ
@@ -159,10 +150,9 @@ ax2.pie(
     sector_assets.values,
     labels=sector_assets.index,
     autopct="%1.1f%%",
-    startangle=90,
-    textprops={'fontproperties': font_prop}
+    startangle=90
 )
-ax2.set_title("セクター別資産比率", fontproperties=font_prop)
+ax2.set_title("セクター別資産比率")
 st.pyplot(fig2)
 
 # 総資産推移
