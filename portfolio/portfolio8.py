@@ -148,6 +148,10 @@ if uploaded_trades:
 else:
     df_trades = fetch_csv_from_github(TRADES_CSV_URL)
 
+df_trades = pd.read_csv("trades.csv", encoding="utf-8-sig")
+df_trades.columns = df_trades.columns.str.strip().str.replace("　", "")  # 全角スペースも除去
+
+
 # 計算
 if not df_portfolio.empty:
     df_portfolio = calculate_portfolio(df_portfolio)
@@ -221,4 +225,5 @@ if not df_portfolio.empty:
     st.line_chart(history["Total"])
 else:
     st.warning("ポートフォリオCSVが読み込めませんでした。")
+
 
