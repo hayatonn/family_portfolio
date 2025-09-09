@@ -2,11 +2,11 @@ import streamlit as st
 import pandas as pd
 import yfinance as yf
 import matplotlib.pyplot as plt
-import matplotlib
 from matplotlib import font_manager as fm
 from datetime import date
 import io
 import requests
+import tempfile
 
 # ========== 設定 ==========
 FX_TO_JPY = {"USD": 155.0, "JPY": 1.0}   # 為替レート
@@ -117,7 +117,6 @@ def load_history(df_portfolio, df_trades=None, period="6mo"):
 st.set_page_config(page_title="ポートフォリオ管理", layout="wide")
 st.title("📊 家族で共有できる資産管理アプリ")
 
-# CSVアップロード or GitHub取得
 uploaded_portfolio = st.file_uploader("ポートフォリオCSVをアップロード", type=["csv"])
 uploaded_trades    = st.file_uploader("売買履歴CSVをアップロード", type=["csv"])
 
@@ -178,4 +177,3 @@ st.pyplot(fig2)
 st.subheader("総資産推移（過去6か月）")
 history = load_history(df_portfolio, df_trades=df_trades, period="6mo")
 st.line_chart(history["Total"])
-
