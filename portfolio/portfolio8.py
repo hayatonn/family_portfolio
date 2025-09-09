@@ -17,9 +17,12 @@ TRADES_CSV_URL    = "https://raw.githubusercontent.com/hayatonn/family_portfolio
 # ========== 日本語フォント設定（Cloud対応） ==========
 FONT_URL = "https://github.com/googlefonts/noto-cjk/raw/main/Sans/OTF/Japanese/NotoSansJP-Regular.otf"
 r = requests.get(FONT_URL)
-font_bytes = io.BytesIO(r.content)
-font_prop = fm.FontProperties(fname=font_bytes)
-matplotlib.rcParams['font.family'] = font_prop.get_name()
+with tempfile.NamedTemporaryFile(delete=False, suffix=".otf") as f:
+    f.write(r.content)
+    font_path = f.name
+
+font_prop = fm.FontProperties(fname=font_path)
+plt.rcParams['font.family'] = font_prop.get_name()
 
 # ========== CSV取得関数 ==========
 def fetch_csv_from_github(url):
@@ -175,3 +178,4 @@ st.pyplot(fig2)
 st.subheader("総資産推移（過去6か月）")
 history = load_history(df_portfolio, df_trades=df_trades, period="6mo")
 st.line_chart(history["Total"])
+
