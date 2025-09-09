@@ -13,11 +13,7 @@ FEE_RATE = 0.00495  # 手数料率 0.495%
 PORTFOLIO_CSV_URL = "https://raw.githubusercontent.com/hayatonn/family_portfolio/refs/heads/main/portfolio/portfolio.csv"
 TRADES_CSV_URL    = "https://raw.githubusercontent.com/hayatonn/family_portfolio/refs/heads/main/portfolio/trades.csv"
 
-# ========== 日本語フォント設定 ==========
-import matplotlib
-matplotlib.rcParams['font.family'] = 'IPAexGothic'
-
-# ========== CSV取得関数 ==========
+# ========== 関数 ==========
 def fetch_csv_from_github(url):
     try:
         r = requests.get(url)
@@ -30,7 +26,9 @@ def fetch_csv_from_github(url):
         return pd.DataFrame()
 
 def guess_currency(ticker: str) -> str:
-    return "JPY" if ticker.endswith(".T") else "USD"
+    if ticker.endswith(".T"):
+        return "JPY"
+    return "USD"
 
 def load_prices_and_sector(tickers):
     prices, sectors = {}, {}
@@ -52,8 +50,10 @@ def calculate_portfolio(df):
 
     df["currency"] = df.get("currency", df["ticker"].map(guess_currency))
     df["fee"] = 0
+
     mask_stock = df["asset_type"]=="stock"
     df.loc[mask_stock, "fee"] = df.loc[mask_stock, "buy_price"] * df.loc[mask_stock, "shares"] * FEE_RATE
+
     df["prev_close"] = df["ticker"].map(prices)
     df["sector"] = df.get("sector", df["ticker"].map(lambda t: sectors.get(t, "Cash")))
 
@@ -75,9 +75,10 @@ def calculate_portfolio(df):
     df["pnl_jpy"]   = df["mv_jpy"] - df["cost_jpy"]
 
     total_pnl = df["pnl_jpy"].sum()
-    df["pnl_contrib_pct"] = df["pnl_jpy"] / total_pnl * 100 if total_pnl != 0 else 0
+    df["pnl_contrib"] = df["pnl_jpy"] / total_pnl * 100 if total_pnl != 0 else 0
 
-    df["mv_contrib"] = df["mv_jpy"] / df["mv_jpy"].sum() * 100
+    # 🔹 評価額に対する損益率
+    df["pnl_over_mv_pct"] = df["pnl_jpy"] / df["mv_jpy"] * 100
 
     return df
 
@@ -87,20 +88,38 @@ def load_history(df_portfolio, df_trades=None, period="6mo"):
         if row["asset_type"]=="stock":
             try:
                 hist = yf.download(row["ticker"], period=period)["Close"]
-                hist_val = hist * row["shares"] * (FX_TO_JPY["USD"] if row["currency"]=="USD" else 1)
+                if row["currency"]=="USD":
+                    hist_val = hist * row["shares"] * FX_TO_JPY["USD"]
+                else:
+                    hist_val = hist * row["shares"]
                 history[row["ticker"]] = hist_val
             except Exception:
                 continue
     history["Total"] = history.sum(axis=1)
+
+    # 現金加算
     for _, row in df_portfolio[df_portfolio["asset_type"]=="cash"].iterrows():
-        history["Total"] += row["shares"] * (FX_TO_JPY["USD"] if row["currency"]=="USD" else 1)
-    if df_trades is not None and not df_trades.empty and "type" in df_trades.columns:
-        df_trades["date"] = pd.to_datetime(df_trades["date"])
-        for _, trade in df_trades.iterrows():
-            trade_date = trade["date"]
-            if trade_date in history.index:
-                mult = 1 if str(trade["type"]).strip().lower()=="buy" else -1
-                history.loc[trade_date, "Total"] += trade["shares"] * (FX_TO_JPY["USD"] if trade["currency"]=="USD" else 1) * mult
+        if row["currency"]=="USD":
+            history["Total"] += row["shares"] * FX_TO_JPY["USD"]
+        else:
+            history["Total"] += row["shares"]
+
+    # 売買履歴
+    if df_trades is not None and not df_trades.empty:
+        if "type" not in df_trades.columns:
+            st.error("❌ trades.csv に 'type' 列がありません。列名を確認してください。")
+            st.write("読み込んだ trades.csv の列:", df_trades.columns.tolist())
+        else:
+            df_trades["date"] = pd.to_datetime(df_trades["date"])
+            for _, trade in df_trades.iterrows():
+                trade_date = trade["date"]
+                if trade_date in history.index:
+                    mult = 1 if str(trade["type"]).strip().lower() == "buy" else -1
+                    if trade["currency"]=="USD":
+                        history.loc[trade_date, "Total"] += trade["shares"] * FX_TO_JPY["USD"] * mult
+                    else:
+                        history.loc[trade_date, "Total"] += trade["shares"] * mult
+
     return history
 
 # ========== Streamlit UI ==========
@@ -110,17 +129,29 @@ st.title("📊 家族で共有できる資産管理アプリ")
 uploaded_portfolio = st.file_uploader("ポートフォリオCSVをアップロード", type=["csv"])
 uploaded_trades    = st.file_uploader("売買履歴CSVをアップロード", type=["csv"])
 
-df_portfolio = pd.read_csv(uploaded_portfolio, encoding="utf-8-sig") if uploaded_portfolio else fetch_csv_from_github(PORTFOLIO_CSV_URL)
-df_trades    = pd.read_csv(uploaded_trades, encoding="utf-8-sig") if uploaded_trades else fetch_csv_from_github(TRADES_CSV_URL)
+if uploaded_portfolio:
+    df_portfolio = pd.read_csv(uploaded_portfolio, encoding="utf-8-sig")
+    df_portfolio.columns = df_portfolio.columns.str.strip().str.replace("　","")
+else:
+    df_portfolio = fetch_csv_from_github(PORTFOLIO_CSV_URL)
+
+if uploaded_trades:
+    df_trades = pd.read_csv(uploaded_trades, encoding="utf-8-sig")
+    df_trades.columns = df_trades.columns.str.strip().str.replace("　","")
+else:
+    df_trades = fetch_csv_from_github(TRADES_CSV_URL)
 
 df_portfolio = calculate_portfolio(df_portfolio)
 
 # 🔹 銘柄別集計
 st.subheader("銘柄別集計")
+total_pnl = df_portfolio["pnl_jpy"].sum()
+df_portfolio["pnl_ratio_pct"] = df_portfolio["pnl_jpy"] / total_pnl * 100 if total_pnl != 0 else 0
+
 st.dataframe(df_portfolio[[
     "ticker","asset_type","shares","buy_price","prev_close",
     "market_value","pnl_abs","pnl_pct",
-    "mv_jpy","mv_contrib","pnl_jpy","pnl_contrib_pct","sector"
+    "mv_jpy","pnl_jpy","pnl_ratio_pct","pnl_over_mv_pct","sector"
 ]])
 
 # 🔹 セクター別寄与度
@@ -129,11 +160,13 @@ sector_df = df_portfolio.groupby("sector").agg(
     mv_jpy=("mv_jpy","sum"),
     pnl_jpy=("pnl_jpy","sum")
 ).reset_index()
-sector_df["mv_contrib"] = sector_df["mv_jpy"] / sector_df["mv_jpy"].sum() * 100
-total_pnl = df_portfolio["pnl_jpy"].sum()
-sector_df["pnl_contrib_pct"] = sector_df["pnl_jpy"] / total_pnl * 100
+
+sector_df["mv_contrib_pct"] = sector_df["mv_jpy"] / sector_df["mv_jpy"].sum() * 100
+sector_df["pnl_ratio_pct"] = sector_df["pnl_jpy"] / total_pnl * 100 if total_pnl != 0 else 0
+sector_df["pnl_over_mv_pct"] = sector_df["pnl_jpy"] / sector_df["mv_jpy"] * 100
 
 st.dataframe(sector_df)
+
 st.subheader("合計")
 st.metric("評価額合計 (JPY)", f"{df_portfolio['mv_jpy'].sum():,.0f}")
 st.metric("含み損益 (JPY)", f"{df_portfolio['pnl_jpy'].sum():,.0f}")
@@ -168,6 +201,7 @@ st.pyplot(fig2)
 st.subheader("総資産推移（過去6か月）")
 history = load_history(df_portfolio, df_trades=df_trades, period="6mo")
 st.line_chart(history["Total"])
+
 
 
 
