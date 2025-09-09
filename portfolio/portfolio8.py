@@ -9,8 +9,8 @@ import requests
 import tempfile
 
 # ========== 設定 ==========
-FX_TO_JPY = {"USD": 155.0, "JPY": 1.0}   # 為替レート
-FEE_RATE = 0.00495  # 手数料率 0.495%
+FX_TO_JPY = {"USD": 155.0, "JPY": 1.0}
+FEE_RATE = 0.00495
 PORTFOLIO_CSV_URL = "https://raw.githubusercontent.com/hayatonn/family_portfolio/refs/heads/main/portfolio/portfolio.csv"
 TRADES_CSV_URL    = "https://raw.githubusercontent.com/hayatonn/family_portfolio/refs/heads/main/portfolio/trades.csv"
 
@@ -22,7 +22,6 @@ with tempfile.NamedTemporaryFile(delete=False, suffix=".ttf") as f:
     font_path = f.name
 
 font_prop = fm.FontProperties(fname=font_path)
-plt.rcParams['font.family'] = font_prop.get_name()
 
 # ========== CSV取得関数 ==========
 def fetch_csv_from_github(url):
@@ -36,13 +35,11 @@ def fetch_csv_from_github(url):
         st.warning(f"GitHub CSV取得失敗: {e}")
         return pd.DataFrame()
 
-# ========== 通貨推定 ==========
 def guess_currency(ticker: str) -> str:
     if ticker.endswith(".T"):
         return "JPY"
     return "USD"
 
-# ========== 株価・セクター取得 ==========
 def load_prices_and_sector(tickers):
     prices, sectors = {}, {}
     for t in tickers:
@@ -56,7 +53,6 @@ def load_prices_and_sector(tickers):
             sectors[t] = "Unknown"
     return prices, sectors
 
-# ========== ポートフォリオ計算 ==========
 def calculate_portfolio(df):
     df.columns = df.columns.str.strip().str.replace("　", "")
     tickers_stock = df[df["asset_type"]=="stock"]["ticker"].unique()
@@ -90,7 +86,6 @@ def calculate_portfolio(df):
     df["pnl_contrib"] = df["pnl_jpy"] / total_pnl * 100 if total_pnl != 0 else 0
     return df
 
-# ========== 総資産履歴 ==========
 def load_history(df_portfolio, df_trades=None, period="6mo"):
     history = pd.DataFrame()
     for _, row in df_portfolio.iterrows():
@@ -125,7 +120,6 @@ df_trades    = pd.read_csv(uploaded_trades, encoding="utf-8-sig") if uploaded_tr
 
 df_portfolio = calculate_portfolio(df_portfolio)
 
-# 銘柄別集計
 st.subheader("銘柄別集計")
 st.dataframe(df_portfolio[[
     "ticker","asset_type","shares","buy_price","prev_close",
@@ -133,14 +127,12 @@ st.dataframe(df_portfolio[[
     "mv_jpy","pnl_jpy","pnl_contrib","sector"
 ]])
 
-# セクター別寄与度
 st.subheader("セクター別寄与度")
 sector_df = df_portfolio.groupby("sector").agg(mv_jpy=("mv_jpy","sum"), pnl_jpy=("pnl_jpy","sum")).reset_index()
 total_pnl = df_portfolio["pnl_jpy"].sum()
 sector_df["pnl_contrib"] = sector_df["pnl_jpy"]/total_pnl*100
 st.dataframe(sector_df)
 
-# 合計
 st.subheader("合計")
 st.metric("評価額合計 (JPY)", f"{df_portfolio['mv_jpy'].sum():,.0f}")
 st.metric("含み損益 (JPY)", f"{df_portfolio['pnl_jpy'].sum():,.0f}")
