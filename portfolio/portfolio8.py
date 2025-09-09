@@ -14,10 +14,10 @@ FEE_RATE = 0.00495  # 手数料率 0.495%
 PORTFOLIO_CSV_URL = "https://raw.githubusercontent.com/hayatonn/family_portfolio/refs/heads/main/portfolio/portfolio.csv"
 TRADES_CSV_URL    = "https://raw.githubusercontent.com/hayatonn/family_portfolio/refs/heads/main/portfolio/trades.csv"
 
-# ========== 日本語フォント設定（Cloud対応） ==========
-FONT_URL = "https://github.com/googlefonts/noto-cjk/raw/main/Sans/OTF/Japanese/NotoSansJP-Regular.otf"
+# ========== 日本語フォント設定（TTF, Cloud対応） ==========
+FONT_URL = "https://github.com/googlefonts/noto-cjk/raw/main/Sans/OTF/Japanese/NotoSansJP-Regular.ttf"
 r = requests.get(FONT_URL)
-with tempfile.NamedTemporaryFile(delete=False, suffix=".otf") as f:
+with tempfile.NamedTemporaryFile(delete=False, suffix=".ttf") as f:
     f.write(r.content)
     font_path = f.name
 
@@ -177,3 +177,4 @@ st.pyplot(fig2)
 st.subheader("総資産推移（過去6か月）")
 history = load_history(df_portfolio, df_trades=df_trades, period="6mo")
 st.line_chart(history["Total"])
+
