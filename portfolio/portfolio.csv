@@ -1,8 +1,10 @@
 ticker,asset_type,shares,buy_price,currency
-AAPL,stock,10,150,USD
-MSFT,stock,5,300,USD
-7203.T,stock,20,2000,JPY
-JPY,cash,100000,100000,JPY
-USD,cash,500,500,USD
+DLO,stock,81,13.45,USD
+WLDN,stock,101,11,USD
+AFRM,stock,87.5,22,USD
+ORCL,stock,239,8,USD
+JPY,cash,3599915.96777,100000,JPY
+USD,cash,3445.58,3445.58,USD
+
 
 
