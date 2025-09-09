@@ -1,10 +1,11 @@
 ticker,asset_type,shares,buy_price,currency
-DLO,stock,81,13.45,USD
+DLO,stock,13.45,81,USD
 WLDN,stock,11,101,USD
 AFRM,stock,22,87.5,USD
 ORCL,stock,8,239,USD
 JPY,cash,3599915.96777,3599915.96777,JPY
 USD,cash,3445.58,3445.58,USD
+
 
 
 
