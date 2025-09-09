@@ -8,8 +8,8 @@ import io, requests
 FX_TO_JPY = {"USD": 155.0, "JPY": 1.0}   # 為替レート
 FEE_RATE = 0.00495  # 手数料率 0.495%
 
-PORTFOLIO_CSV_URL = "https://raw.githubusercontent.com/<username>/<repo>/main/portfolio/portfolio.csv"
-TRADES_CSV_URL    = "https://raw.githubusercontent.com/<username>/<repo>/main/portfolio/trades.csv"
+PORTFOLIO_CSV_URL = "https://raw.githubusercontent.com/<username>/<repo>/main/portfolio.csv"
+TRADES_CSV_URL    = "https://raw.githubusercontent.com/<username>/<repo>/main/trades.csv"
 
 # ========== 関数 ==========
 def fetch_csv_from_github(url):
@@ -133,6 +133,7 @@ if not df_portfolio.empty:
     st.subheader("合計")
     st.metric("評価額合計 (JPY)", f"{df_portfolio['mv_jpy'].sum():,.0f}")
     st.metric("含み損益 (JPY)", f"{df_portfolio['pnl_jpy'].sum():,.0f}")
+
 
 
 
