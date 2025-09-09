@@ -139,7 +139,7 @@ ax.pie(
     autopct="%1.1f%%",
     startangle=90
 )
-ax.set_title("資産寄与度")
+ax.set_title("stock_ratio")
 st.pyplot(fig)
 
 # セクター円グラフ
@@ -152,10 +152,11 @@ ax2.pie(
     autopct="%1.1f%%",
     startangle=90
 )
-ax2.set_title("セクター別資産比率")
+ax2.set_title("sector_ratio")
 st.pyplot(fig2)
 
 # 総資産推移
 st.subheader("総資産推移（過去6か月）")
 history = load_history(df_portfolio, df_trades=df_trades, period="6mo")
 st.line_chart(history["Total"])
+
