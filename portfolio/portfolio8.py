@@ -9,6 +9,16 @@ import requests
 # ========== 設定 ==========
 FEE_RATE = 0.00495  # 手数料率 0.495%
 
+# CSV読み込み後に列名の前後空白や全角スペースを削除
+df_portfolio.columns = df_portfolio.columns.str.strip().str.replace("　","")
+
+# 必須列チェック
+required_cols = ["ticker", "asset_type", "shares", "buy_price", "currency"]
+for col in required_cols:
+    if col not in df_portfolio.columns:
+        st.error(f"CSVに必須列 {col} がありません")
+        st.stop()
+
 # GitHub CSV URL（raw）を指定
 PORTFOLIO_CSV_URL = "https://raw.githubusercontent.com/<username>/<repo>/main/portfolio/portfolio.csv"
 TRADES_CSV_URL    = "https://raw.githubusercontent.com/<username>/<repo>/main/portfolio/trades.csv"
@@ -191,5 +201,6 @@ st.pyplot(fig2)
 st.subheader("総資産推移（過去6か月）")
 history = load_history(df_portfolio, df_trades=df_trades, period="6mo")
 st.line_chart(history["Total"])
+
 
 
