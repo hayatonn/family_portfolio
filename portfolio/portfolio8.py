@@ -10,8 +10,8 @@ import requests
 FEE_RATE = 0.00495  # 手数料率 0.495%
 
 # GitHub CSV URL（raw）を指定
-PORTFOLIO_CSV_URL = "https://raw.githubusercontent.com/<username>/<repo>/main/portfolio.csv"
-TRADES_CSV_URL    = "https://raw.githubusercontent.com/<username>/<repo>/main/trades.csv"
+PORTFOLIO_CSV_URL = "https://raw.githubusercontent.com/<username>/<repo>/main/portfolio/portfolio.csv"
+TRADES_CSV_URL    = "https://raw.githubusercontent.com/<username>/<repo>/main/portfolio/trades.csv"
 
 # ========== 関数 ==========
 def fetch_csv_from_github(url):
@@ -191,4 +191,5 @@ st.pyplot(fig2)
 st.subheader("総資産推移（過去6か月）")
 history = load_history(df_portfolio, df_trades=df_trades, period="6mo")
 st.line_chart(history["Total"])
+
 
