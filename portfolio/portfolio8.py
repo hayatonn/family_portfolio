@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import yfinance as yf
 import matplotlib.pyplot as plt
+import matplotlib
 from datetime import date
 import io
 import requests
@@ -165,6 +166,9 @@ st.subheader("合計")
 st.metric("評価額合計 (JPY)", f"{df_portfolio['mv_jpy'].sum():,.0f}")
 st.metric("含み損益 (JPY)", f"{df_portfolio['pnl_jpy'].sum():,.0f}")
 
+# 日本語フォントを Noto Sans CJK JP に指定
+matplotlib.rcParams['font.family'] = "Noto Sans CJK JP"
+
 # 円グラフ（株＋現金）
 st.subheader("資産別寄与度（円グラフ）")
 latest_assets = df_portfolio.groupby("ticker")["mv_jpy"].sum()
@@ -185,3 +189,4 @@ st.pyplot(fig2)
 st.subheader("総資産推移（過去6か月）")
 history = load_history(df_portfolio, df_trades=df_trades, period="6mo")
 st.line_chart(history["Total"])
+
