@@ -75,7 +75,10 @@ def calculate_portfolio(df):
     df["pnl_jpy"]   = df["mv_jpy"] - df["cost_jpy"]
 
     total_pnl = df["pnl_jpy"].sum()
-    df["pnl_contrib"] = df["pnl_jpy"] / total_pnl * 100 if total_pnl != 0 else 0
+    df["pnl_contrib_pct"] = df["pnl_jpy"] / total_pnl * 100 if total_pnl != 0 else 0
+
+    df["mv_contrib"] = df["mv_jpy"] / df["mv_jpy"].sum() * 100
+
     return df
 
 def load_history(df_portfolio, df_trades=None, period="6mo"):
@@ -112,17 +115,24 @@ df_trades    = pd.read_csv(uploaded_trades, encoding="utf-8-sig") if uploaded_tr
 
 df_portfolio = calculate_portfolio(df_portfolio)
 
+# 🔹 銘柄別集計
 st.subheader("銘柄別集計")
 st.dataframe(df_portfolio[[
     "ticker","asset_type","shares","buy_price","prev_close",
     "market_value","pnl_abs","pnl_pct",
-    "mv_jpy","pnl_jpy","pnl_contrib","sector"
+    "mv_jpy","mv_contrib","pnl_jpy","pnl_contrib_pct","sector"
 ]])
 
+# 🔹 セクター別寄与度
 st.subheader("セクター別寄与度")
-sector_df = df_portfolio.groupby("sector").agg(mv_jpy=("mv_jpy","sum"), pnl_jpy=("pnl_jpy","sum")).reset_index()
+sector_df = df_portfolio.groupby("sector").agg(
+    mv_jpy=("mv_jpy","sum"),
+    pnl_jpy=("pnl_jpy","sum")
+).reset_index()
+sector_df["mv_contrib"] = sector_df["mv_jpy"] / sector_df["mv_jpy"].sum() * 100
 total_pnl = df_portfolio["pnl_jpy"].sum()
-sector_df["pnl_contrib"] = sector_df["pnl_jpy"]/total_pnl*100
+sector_df["pnl_contrib_pct"] = sector_df["pnl_jpy"] / total_pnl * 100
+
 st.dataframe(sector_df)
 
 st.subheader("合計")
@@ -159,4 +169,5 @@ st.pyplot(fig2)
 st.subheader("総資産推移（過去6か月）")
 history = load_history(df_portfolio, df_trades=df_trades, period="6mo")
 st.line_chart(history["Total"])
+
 
