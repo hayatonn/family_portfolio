@@ -15,6 +15,16 @@ FEE_RATE = 0.00495  # 手数料率 0.495%
 PORTFOLIO_CSV_URL = "https://raw.githubusercontent.com/hayatonn/family_portfolio/refs/heads/main/portfolio/portfolio.csv"
 TRADES_CSV_URL    = "https://raw.githubusercontent.com/hayatonn/family_portfolio/refs/heads/main/portfolio/trades.csv"
 
+# ========== 日本語フォント設定 ==========
+# フォントファイルをダウンロードして、Streamlit Cloud で使う例
+FONT_URL = "https://github.com/googlefonts/noto-cjk/raw/main/Sans/OTF/Japanese/NotoSansJP-Regular.otf"
+r = requests.get(FONT_URL)
+with open("NotoSansJP-Regular.otf", "wb") as f:
+    f.write(r.content)
+
+font_prop = fm.FontProperties(fname="NotoSansJP-Regular.otf")
+matplotlib.rcParams['font.family'] = font_prop.get_name()
+
 # ========== 関数 ==========
 def fetch_csv_from_github(url):
     try:
@@ -166,27 +176,39 @@ st.subheader("合計")
 st.metric("評価額合計 (JPY)", f"{df_portfolio['mv_jpy'].sum():,.0f}")
 st.metric("含み損益 (JPY)", f"{df_portfolio['pnl_jpy'].sum():,.0f}")
 
-# 日本語フォントを Noto Sans CJK JP に指定
-matplotlib.rcParams['font.family'] = "Noto Sans CJK JP"
 
-# 円グラフ（株＋現金）
+# 例として円グラフ部分のみ修正版
 st.subheader("資産別寄与度（円グラフ）")
 latest_assets = df_portfolio.groupby("ticker")["mv_jpy"].sum()
 fig, ax = plt.subplots()
-ax.pie(latest_assets.values, labels=latest_assets.index, autopct="%1.1f%%", startangle=90)
-ax.set_title("資産寄与度")
+ax.pie(
+    latest_assets.values,
+    labels=latest_assets.index,
+    autopct="%1.1f%%",
+    startangle=90,
+    textprops={'fontproperties': font_prop}  # 個別ラベルも日本語フォントに
+)
+ax.set_title("資産寄与度", fontproperties=font_prop)
 st.pyplot(fig)
 
 # セクター円グラフ
 st.subheader("セクター別資産比率")
 sector_assets = df_portfolio.groupby("sector")["mv_jpy"].sum()
 fig2, ax2 = plt.subplots()
-ax2.pie(sector_assets.values, labels=sector_assets.index, autopct="%1.1f%%", startangle=90)
-ax2.set_title("セクター別資産比率")
+ax2.pie(
+    sector_assets.values,
+    labels=sector_assets.index,
+    autopct="%1.1f%%",
+    startangle=90,
+    textprops={'fontproperties': font_prop}
+)
+ax2.set_title("セクター別資産比率", fontproperties=font_prop)
 st.pyplot(fig2)
+
 
 # 総資産推移
 st.subheader("総資産推移（過去6か月）")
 history = load_history(df_portfolio, df_trades=df_trades, period="6mo")
 st.line_chart(history["Total"])
+
 
