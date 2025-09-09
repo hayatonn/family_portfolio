@@ -1,0 +1,8 @@
+ticker,asset_type,shares,buy_price,currency
+AAPL,stock,10,150,USD
+MSFT,stock,5,300,USD
+7203.T,stock,20,2000,JPY
+JPY,cash,100000,100000,JPY
+USD,cash,500,500,USD
+
+
