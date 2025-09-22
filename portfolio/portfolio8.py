@@ -37,7 +37,16 @@ def load_prices_and_sector(tickers):
             ticker = yf.Ticker(t)
             hist = ticker.history(period="5d")
             prices[t] = float(hist["Close"].dropna().iloc[-1])
-            sectors[t] = ticker.info.get("sector", "Unknown")
+
+            # 🔹 暗号資産は -USD 判定で Crypto に分類
+            if t.endswith("-USD"):
+                sectors[t] = "Crypto"
+            else:
+                info = getattr(ticker, "info", {})
+                if isinstance(info, dict):
+                    sectors[t] = info.get("sector", "Unknown")
+                else:
+                    sectors[t] = "Unknown"
         except Exception:
             prices[t] = None
             sectors[t] = "Unknown"
@@ -45,22 +54,24 @@ def load_prices_and_sector(tickers):
 
 def calculate_portfolio(df):
     df.columns = df.columns.str.strip().str.replace("　", "")
-    tickers_stock = df[df["asset_type"]=="stock"]["ticker"].unique()
-    prices, sectors = load_prices_and_sector(tickers_stock)
+
+    # 🔹 株と暗号資産をまとめて価格取得
+    tickers_target = df[df["asset_type"].isin(["stock","crypto"])]["ticker"].unique()
+    prices, sectors = load_prices_and_sector(tickers_target)
 
     df["currency"] = df.get("currency", df["ticker"].map(guess_currency))
     df["fee"] = 0
 
-    mask_stock = df["asset_type"]=="stock"
-    df.loc[mask_stock, "fee"] = df.loc[mask_stock, "buy_price"] * df.loc[mask_stock, "shares"] * FEE_RATE
+    mask_equity = df["asset_type"].isin(["stock","crypto"])
+    df.loc[mask_equity, "fee"] = df.loc[mask_equity, "buy_price"] * df.loc[mask_equity, "shares"] * FEE_RATE
 
     df["prev_close"] = df["ticker"].map(prices)
     df["sector"] = df.get("sector", df["ticker"].map(lambda t: sectors.get(t, "Cash")))
 
     df["market_value"] = 0
     df["cost_basis"]  = 0
-    df.loc[mask_stock, "market_value"] = df.loc[mask_stock, "shares"] * df.loc[mask_stock, "prev_close"]
-    df.loc[mask_stock, "cost_basis"]  = df.loc[mask_stock, "shares"] * df.loc[mask_stock, "buy_price"] + df.loc[mask_stock, "fee"]
+    df.loc[mask_equity, "market_value"] = df.loc[mask_equity, "shares"] * df.loc[mask_equity, "prev_close"]
+    df.loc[mask_equity, "cost_basis"]  = df.loc[mask_equity, "shares"] * df.loc[mask_equity, "buy_price"] + df.loc[mask_equity, "fee"]
 
     mask_cash = df["asset_type"]=="cash"
     df.loc[mask_cash, "market_value"] = df.loc[mask_cash, "shares"]
@@ -85,7 +96,7 @@ def calculate_portfolio(df):
 def load_history(df_portfolio, df_trades=None, period="6mo"):
     history = pd.DataFrame()
     for _, row in df_portfolio.iterrows():
-        if row["asset_type"]=="stock":
+        if row["asset_type"] in ["stock","crypto"]:
             try:
                 hist = yf.download(row["ticker"], period=period)["Close"]
                 if row["currency"]=="USD":
@@ -171,7 +182,7 @@ st.subheader("合計")
 st.metric("評価額合計 (JPY)", f"{df_portfolio['mv_jpy'].sum():,.0f}")
 st.metric("含み損益 (JPY)", f"{df_portfolio['pnl_jpy'].sum():,.0f}")
 
-# 円グラフ（株＋現金）
+# 円グラフ（銘柄別）
 st.subheader("資産別寄与度（円グラフ）")
 latest_assets = df_portfolio.groupby("ticker")["mv_jpy"].sum()
 fig, ax = plt.subplots()
@@ -201,7 +212,3 @@ st.pyplot(fig2)
 st.subheader("総資産推移（過去6か月）")
 history = load_history(df_portfolio, df_trades=df_trades, period="6mo")
 st.line_chart(history["Total"])
-
-
-
-
