@@ -12,7 +12,6 @@ OSCR,stock,56,17.8,USD
 BA,stock,5,214.3453,USD
 RBRK,stock,23,79.469,USD
 CRDO,stock,7,149.8,USD
-ORCL,stock,3,293.08,USD
 PGY,stock,25,34.85,USD
 AFRM,stock,13,76.92,USD
 CRDO,stock,4,146,USD
@@ -25,7 +24,6 @@ ALAB,stock,5,188.6,USD
 CRDO,stock,8,138.26,USD
 NUTX,stock,10,100.8,USD
 PGY,stock,37,27.01,USD
-OSCR,stock,52,19.41,USD
 HOOD,stock,8,134.5,USD
 ALAB,stock,6,173.7482,USD
 CRDO,stock,8,134.85,USD
@@ -33,7 +31,6 @@ NUTX,stock,12,97,USD
 CRDO,stock,4,133.6,USD
 AMZN,stock,5,216.37,USD
 NBIS,stock,9,117.95,USD
-CRWV,stock,8,132.2,USD
 IONQ,stock,15,65.02,USD
 AFRM,stock,10,68,USD
 MPWR,stock,2,1035,USD
@@ -41,8 +38,11 @@ NBIS,stock,10,107.88,USD
 NBIS,stock,5,106,USD
 NBIS,stock,10,95.4,USD
 HOOD,stock,8,128.4,USD
-CRWV,stock,8,119.91,USD
 OSCR,stock,54,18.7,USD
+RKLB,stock,67,42.6,USD
+RDDT,stock,10,190.7,USD
+META,stock,5,636.4040,USD
+OKLO,stock,99.6,10,USD
 
 
 
