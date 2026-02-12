@@ -1,29 +1,22 @@
 ticker,asset_type,shares,buy_price,currency
 DLO,stock,81,13.45,USD
-WLDN,stock,11,101,USD
 AFRM,stock,22,87.5,USD
-ORCL,stock,8,239,USD
 NVDA,stock,8,168.26,USD
 IOT,stock,26,39.5,USD
 IREN,stock,35,28.53,USD
 ORCL,stock,3,300.1,USD
 NBIS,stock,11,92.01,USD
 OSCR,stock,56,17.8,USD
-BA,stock,5,214.3453,USD
 RBRK,stock,23,79.469,USD
 CRDO,stock,7,149.8,USD
 AFRM,stock,13,76.92,USD
 CRDO,stock,4,146,USD
 GEV,stock,4,610,USD
-ALAB,stock,8,205.5,USD
-DAVE,stock,5,220,USD
 LITE,stock,6,160,USD
-ALAB,stock,5,188.6,USD
 CRDO,stock,8,138.26,USD
 NUTX,stock,10,100.8,USD
 PGY,stock,37,27.01,USD
 HOOD,stock,8,134.5,USD
-ALAB,stock,6,173.7482,USD
 CRDO,stock,8,134.85,USD
 NUTX,stock,12,97,USD
 CRDO,stock,4,133.6,USD
@@ -40,6 +33,7 @@ OSCR,stock,54,18.7,USD
 RKLB,stock,67,42.6,USD
 RDDT,stock,10,190.7,USD
 META,stock,5,636.4040,USD
+
 
 
 
