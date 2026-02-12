@@ -4,7 +4,6 @@ AFRM,stock,22,87.5,USD
 NVDA,stock,8,168.26,USD
 IOT,stock,26,39.5,USD
 IREN,stock,35,28.53,USD
-ORCL,stock,3,300.1,USD
 NBIS,stock,11,92.01,USD
 OSCR,stock,56,17.8,USD
 RBRK,stock,23,79.469,USD
@@ -34,6 +33,7 @@ RKLB,stock,67,42.6,USD
 RDDT,stock,10,190.7,USD
 META,stock,5,636.4040,USD
 CASH,cash,8856,1,USD
+
 
 
 
